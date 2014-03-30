@@ -1,7 +1,11 @@
 django-filerxmp
 ===============
 
-`django-filerxmp` aims to extend supported file metadata available in the database based on data provided by XMP. Instead of relying on existing libraries the XMP section of supported file types (currently only images, but the package is actively extended to support audio and video formats) is extracted from the file. This decision was based on incompatibilities between certain Exif/IPTC-NAA boundaries that led to cropped keywords and various other issues.
+```Status: experimental, currently under development.```
+  
+    `django-filerxmp` aims to extend supported file metadata available in the database based on data provided by XMP. 
+
+Instead of relying on existing libraries the XMP section of supported file types (currently only images, but the package is actively extended to support audio and video formats) is extracted from the file. This decision was based on incompatibilities between certain Exif/IPTC-NAA boundaries that led to cropped keywords and various other issues.
 
 
 Status
