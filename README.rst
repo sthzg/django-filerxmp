@@ -12,5 +12,5 @@ About
 Status
 ------
 
-The package is currently in very early development. Once it reaches a ready-to-be-tested state documentation will be extenden.
+The package is currently in very early development. Once it reaches a ready-to-be-tested state documentation will be extended.
 
