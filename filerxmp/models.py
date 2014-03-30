@@ -15,10 +15,13 @@ from filer.models import File
 from taggit.managers import TaggableManager
 # ______________________________________________________________________________
 #                                                                        Package
-from filerxmp.xmpextractor import extract_xmp_for_image
+from filerxmp.xmpextractor import extract_xmp_for_image, \
+    get_empty_default_dict_for_image
 from filerxmp.helpers import get_xmp_string_from__file, get_datetime_or_none
 
 
+# ______________________________________________________________________________
+#                                                               Manager: XMPBase
 class XMPBaseManager(models.Manager):
 
     def create_or_update_xmp(self, fid=None):
@@ -29,6 +32,7 @@ class XMPBaseManager(models.Manager):
 
         :param fid: None, int or list of file ids to process
         """
+        # TODO  Support fid parameter
         if not fid:
             filter_query = {}
 
@@ -56,6 +60,12 @@ class XMPBaseManager(models.Manager):
 
         # File doesn't carry XMP data
         if not xmp_str:
+            defaults = get_empty_default_dict_for_image()
+            skip_keys = ('createdate', 'modifydate')
+            for k, v in defaults.items():
+                if k in skip_keys:
+                    continue
+                xmp_img.__setattr__('xmp_{}'.format(k), v)
             xmp_img.has_data = False
             xmp_img.is_processed = True
             xmp_img.save()
@@ -105,6 +115,8 @@ class XMPBaseManager(models.Manager):
             return
 
 
+# ______________________________________________________________________________
+#                                                                 Model: XMPBase
 class XMPBase(TimeStampedModel):
 
     class Meta:
@@ -204,6 +216,8 @@ class XMPBase(TimeStampedModel):
         return u'{}'.format(self.file.original_filename)
 
 
+# ______________________________________________________________________________
+#                                                                Model: XMPImage
 class XMPImage(XMPBase):
 
     class Meta:

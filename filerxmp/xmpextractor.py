@@ -24,7 +24,7 @@ def extract_xmp_for_image(xml_as_string):
     # to get a clean, dtd/schema-based solution.
     #
 
-    result = dict()
+    result = get_empty_default_dict_for_image()
     data = etree.fromstring(xml_as_string)
 
     # Support for Lightroom 3.5
@@ -52,7 +52,7 @@ def extract_xmp_for_image(xml_as_string):
         result['modifydate'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
 
         query = '//@xmp:CreatorTool'
-        result['creator_tool'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
+        result['creatortool'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
 
         query = '*//{0}subject/{1}Bag/{1}li'.format(NS_DC, NS_RDF)
         result['keywords'] = gvod(data, query)
@@ -65,25 +65,25 @@ def extract_xmp_for_image(xml_as_string):
 
     # Support for Lightroom 5
     # --------------------------------------------------------------------------
-    else:
-        query = '*//{0}Lens'.format(NS_AUX)
-        result['lens'] = gvod(data, query)
+    query = '*//{0}Lens'.format(NS_AUX)
+    result['lens'] = gvod(data, query, result['lens'])
 
-        query = '*//{0}LensInfo'.format(NS_AUX)
-        result['lens_info'] = gvod(data, query)
+    query = '*//{0}LensInfo'.format(NS_AUX)
+    result['lens_info'] = gvod(data, query, result['lens_info'])
 
-        query = '*//{0}CreateDate'.format(NS_AUX)
-        result['createdate'] = gvod(data, query)
+    query = '*//{0}CreateDate'.format(NS_AUX)
+    result['createdate'] = gvod(data, query, result['createdate'])
 
-        query = '*//{0}CreatorTool'.format(NS_AUX)
-        result['creator_tool'] = gvod(data, query)
+    query = '*//{0}CreatorTool'.format(NS_XMP)
+    result['creatortool'] = gvod(data, query, result['creatortool'])
 
-        query = '*//{0}CreateDate'.format(NS_XMP)
-        result['createdate'] = gvod(data, query)
+    query = '*//{0}CreateDate'.format(NS_XMP)
+    result['createdate'] = gvod(data, query, result['createdate'])
 
-        query = '*//{0}ModifyDate'.format(NS_XMP)
-        result['modifydate'] = gvod(data, query)
+    query = '*//{0}ModifyDate'.format(NS_XMP)
+    result['modifydate'] = gvod(data, query, result['modifydate'])
 
+    print result
     return result
 
 
@@ -120,3 +120,18 @@ def gaod(data, query, ns, ns_prefix, default=''):
         result = default
 
     return result
+
+
+def get_empty_default_dict_for_image():
+    return {
+        'title': '',
+        'description': '',
+        'createdate': '',
+        'modifydate': '',
+        'lens_info': '',
+        'lens': '',
+        'creatortool': '',
+        'keywords': list(),
+        'creator': '',
+        'copyright': '',
+    }

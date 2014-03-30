@@ -44,8 +44,8 @@ class XMPImageForm(ModelForm):
 class XMPImageAdmin(ModelAdmin):
     form = XMPImageForm
     readonly_fields = ('is_processed', 'has_data',)
-    list_display = ('file', 'xmp_createdate', 'xmp_title', 'has_data',
-                    'is_processed',)
+    list_display = ('file', 'xmp_createdate', 'xmp_title', 'xmp_creatortool',
+                    'has_data', 'is_processed',)
 
 
 admin.site.register(XMPImage, XMPImageAdmin)
