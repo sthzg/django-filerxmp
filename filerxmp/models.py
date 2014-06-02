@@ -9,10 +9,14 @@ from django.db import models
 from django.db.utils import IntegrityError
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 # ______________________________________________________________________________
 #                                                                        Contrib
-from filer.models import File
-from taggit.managers import TaggableManager
+from filer.models import File, Image
+from taggit_autosuggest_select2.managers import TaggableManager
+# ______________________________________________________________________________
+#                                                                         Custom
 # ______________________________________________________________________________
 #                                                                        Package
 from filerxmp.xmpextractor import extract_xmp_for_image, \
@@ -27,7 +31,7 @@ class XMPBaseManager(models.Manager):
     def create_or_update_xmp(self, fid=None):
         """
         This method is the entry point for XMP meta data creation for all
-        supported file types. It delegates the detailled tasks to private
+        supported file types. It delegates the detailed tasks to private
         methods of the model manager.
 
         :param fid: None, int or list of file ids to process
@@ -35,6 +39,8 @@ class XMPBaseManager(models.Manager):
         # TODO  Support fid parameter
         if not fid:
             filter_query = {}
+        else:
+            filter_query = {'pk': fid}
 
         files = File.objects.filter(**filter_query)
 
@@ -50,13 +56,12 @@ class XMPBaseManager(models.Manager):
         :param f: object of instan filer file
         """
         try:
-            xmp_img = XMPImage.objects.get(file=f)
+            xmp_img = XMPImage.objects.get(file=f.pk)
         except ObjectDoesNotExist:
             xmp_img = XMPImage()
 
         xmp_img.file = f
-
-        xmp_str = get_xmp_string_from__file(f.path)
+        xmp_str = get_xmp_string_from__file(xmp_img.file.path)
 
         # File doesn't carry XMP data
         if not xmp_str:
@@ -142,7 +147,7 @@ class XMPBase(TimeStampedModel):
     file = models.OneToOneField(
         File,
         verbose_name=_('file'),
-        related_name='xmp',
+        related_name='file_xmpbase',
         blank=False,
         null=False,
         default=None
@@ -171,7 +176,7 @@ class XMPBase(TimeStampedModel):
     )
 
     xmp_keywords = TaggableManager(
-        blank=True
+        blank=True,
     )
 
     xmp_createdate = models.DateTimeField(
@@ -212,6 +217,9 @@ class XMPBase(TimeStampedModel):
         null=True
     )
 
+    def get_tags_display(self):
+        return self.xmp_keywords.values_list('name', flat=True)
+
     def __unicode__(self):
         return u'{}'.format(self.file.original_filename)
 
@@ -250,3 +258,14 @@ class XMPImage(XMPBase):
 
     def __unicode__(self):
         return u'{}, type: Image'.format(self.file.original_filename)
+
+
+# ______________________________________________________________________________
+#                                                               Signal Listeners
+@receiver(post_save, sender=File)
+def extract_file_xmp(sender, **kwargs):
+    pass
+
+@receiver(post_save, sender=Image)
+def extract_image_xmp(sender, **kwargs):
+    XMPBase.objects.create_or_update_xmp(kwargs.get('instance').pk)

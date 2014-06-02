@@ -1,0 +1,7 @@
+.inline-link {
+  font-size: 11px;
+  color: black;
+  font-family: monospace;
+  display: inline-block;
+  margin: 0 4px;
+}

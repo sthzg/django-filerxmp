@@ -39,49 +39,91 @@ def extract_xmp_for_image(xml_as_string):
     res = data.find(query)
 
     if res is not None:
-        query = '//@aux:LensInfo'
-        result['lens_info'] = gaod(res, query, res.nsmap['aux'], 'aux')
+        try:
+            query = '//@aux:LensInfo'
+            result['lens_info'] = gaod(res, query, res.nsmap['aux'], 'aux')
+        except:
+            pass
 
-        query = '//@aux:Len'
-        result['lens'] =  gaod(res, query, res.nsmap['aux'], 'aux')
+        try:
+            query = '//@aux:Len'
+            result['lens'] =  gaod(res, query, res.nsmap['aux'], 'aux')
+        except:
+            pass
 
-        query = '//@xmp:CreateDate'
-        result['createdate'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
+        try:
+            query = '//@xmp:CreateDate'
+            result['createdate'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
+        except:
+            pass
 
-        query = '//@xmp:ModifyDate'
-        result['modifydate'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
+        try:
+            query = '//@xmp:ModifyDate'
+            result['modifydate'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
+        except:
+            pass
 
-        query = '//@xmp:CreatorTool'
-        result['creatortool'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
+        try:
+            query = '//@xmp:CreatorTool'
+            result['creatortool'] = gaod(res, query, res.nsmap['xmp'], 'xmp')
+        except:
+            pass
 
-        query = '*//{0}subject/{1}Bag/{1}li'.format(NS_DC, NS_RDF)
-        result['keywords'] = gvod(data, query)
+        try:
+            query = '*//{0}subject/{1}Bag/{1}li'.format(NS_DC, NS_RDF)
+            result['keywords'] = gvod(data, query)
+        except:
+            pass
 
-        query = '*//{0}creator/{1}Seq/{1}li'.format(NS_DC, NS_RDF)
-        result['creator'] = gvod(data, query)
+        try:
+            query = '*//{0}creator/{1}Seq/{1}li'.format(NS_DC, NS_RDF)
+            result['creator'] = gvod(data, query)
+        except:
+            pass
 
-        query = '*//{0}rights/{1}Alt/{1}li'.format(NS_DC, NS_RDF)
-        result['copyright'] = gvod(data, query)
+        try:
+            query = '*//{0}rights/{1}Alt/{1}li'.format(NS_DC, NS_RDF)
+            result['copyright'] = gvod(data, query)
+        except:
+            pass
 
     # Support for Lightroom 5
     # --------------------------------------------------------------------------
-    query = '*//{0}Lens'.format(NS_AUX)
-    result['lens'] = gvod(data, query, result['lens'])
+    try:
+        query = '*//{0}Lens'.format(NS_AUX)
+        result['lens'] = gvod(data, query, result['lens'])
+    except:
+        pass
 
-    query = '*//{0}LensInfo'.format(NS_AUX)
-    result['lens_info'] = gvod(data, query, result['lens_info'])
+    try:
+        query = '*//{0}LensInfo'.format(NS_AUX)
+        result['lens_info'] = gvod(data, query, result['lens_info'])
+    except:
+        pass
 
-    query = '*//{0}CreateDate'.format(NS_AUX)
-    result['createdate'] = gvod(data, query, result['createdate'])
+    try:
+        query = '*//{0}CreateDate'.format(NS_AUX)
+        result['createdate'] = gvod(data, query, result['createdate'])
+    except:
+        pass
 
-    query = '*//{0}CreatorTool'.format(NS_XMP)
-    result['creatortool'] = gvod(data, query, result['creatortool'])
+    try:
+        query = '*//{0}CreatorTool'.format(NS_XMP)
+        result['creatortool'] = gvod(data, query, result['creatortool'])
+    except:
+        pass
 
-    query = '*//{0}CreateDate'.format(NS_XMP)
-    result['createdate'] = gvod(data, query, result['createdate'])
+    try:
+        query = '*//{0}CreateDate'.format(NS_XMP)
+        result['createdate'] = gvod(data, query, result['createdate'])
+    except:
+        pass
 
-    query = '*//{0}ModifyDate'.format(NS_XMP)
-    result['modifydate'] = gvod(data, query, result['modifydate'])
+    try:
+        query = '*//{0}ModifyDate'.format(NS_XMP)
+        result['modifydate'] = gvod(data, query, result['modifydate'])
+    except:
+        pass
 
     print result
     return result
