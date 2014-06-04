@@ -114,7 +114,7 @@ def xmp(self, obj):
 
 ItemAdmin.xmp = classmethod(xmp)
 ItemAdmin.list_display = ItemAdmin.list_display + ('xmp',)
-ItemAdmin.list_filter = ItemAdmin.list_filter + (HasXMPFilter,)
+ItemAdmin.list_filter = ItemAdmin.list_filter + [HasXMPFilter]
 ItemAdmin.Media.js.append('filerxmp/js/filerxmp_admin.js')
 ItemAdmin.Media.css['all'].append('filerxmp/css/filerxmp_admin.css')
 
