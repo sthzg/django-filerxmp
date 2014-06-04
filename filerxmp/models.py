@@ -130,6 +130,8 @@ class XMPBase(TimeStampedModel):
 
     objects = XMPBaseManager()
 
+    id = models.AutoField(primary_key=True)
+
     has_data = models.BooleanField(
         _('has XMP data'),
         blank=True,
@@ -218,6 +220,8 @@ class XMPBase(TimeStampedModel):
     )
 
     def get_tags_display(self):
+        # TODO This needs to currently be invoked by child instance or it
+        #      returns 0 keywords.
         return self.xmp_keywords.values_list('name', flat=True)
 
     def __unicode__(self):

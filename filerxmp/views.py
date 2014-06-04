@@ -12,13 +12,13 @@ from filersets.models import Item
 from rest_framework import viewsets
 # ______________________________________________________________________________
 #                                                                        Package
-from filerxmp.serializers import XMPBaseSerializer
-from filerxmp.models import XMPBase
+from filerxmp.serializers import XMPBaseSerializer, XMPImageSerializer
+from filerxmp.models import XMPBase, XMPImage
 
 
 # ______________________________________________________________________________
 #                                                               View: ProcessXMP
-from rest_framework.generics import RetrieveAPIView, ListAPIView
+from rest_framework.generics import RetrieveAPIView
 
 
 class ProcessXMPView(View):
@@ -37,9 +37,21 @@ class XMPBaseViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = XMPBaseSerializer
 
 
-class XMPBaseDetailByItemPk(RetrieveAPIView):
+class XMPImageViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Return the associated XMP item by Item pk.
+    API endpoint that allows XMPImage data to be viewed
+    """
+    queryset = XMPImage.objects.all()
+    serializer_class = XMPImageSerializer
+
+
+class XMPBaseDetail(RetrieveAPIView):
+    """
+    Return the associated XMP item.
+
+    Currently supported lookups by:
+    - pk_item
+    - pk_file
 
     Note that this method checks for known child classes of XMPBase and returns
     the child class rather than the base class if available. Otherwise the
@@ -50,14 +62,17 @@ class XMPBaseDetailByItemPk(RetrieveAPIView):
     lookup_field = 'pk'
 
     def get_object(self):
-        try:
-            pk = int(self.kwargs.get('pk'))
-        except TypeError:
-            # TODO  Do exception handling
-            pass
+        # Check which lookup we need to perform.
+        if 'pk_item' in self.kwargs:
+            g_query = {'pk': int(self.kwargs.get('pk_item'))}
+        elif 'pk_file' in self.kwargs:
+            g_query = {'file': int(self.kwargs.get('pk_file'))}
+        else:
+            raise ValueError
 
         try:
-            xmpbase = Item.objects.get(pk=pk).filer_file.file_xmpbase
+            # xmpbase = Item.objects.get(**g_query).filer_file.file_xmpbase
+            xmpbase = XMPBase.objects.get(**g_query)
             if hasattr(xmpbase, 'xmpimage'):
                 return xmpbase.xmpimage
             else:

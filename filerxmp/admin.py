@@ -115,11 +115,19 @@ def xmp(self, obj):
 ItemAdmin.xmp = classmethod(xmp)
 ItemAdmin.list_display = ItemAdmin.list_display + ('xmp',)
 ItemAdmin.list_filter = ItemAdmin.list_filter + (HasXMPFilter,)
-# ItemAdmin.inlines = ItemAdmin.inlines + [XMPImageAdminInline]
 ItemAdmin.Media.js.append('filerxmp/js/filerxmp_admin.js')
 ItemAdmin.Media.css['all'].append('filerxmp/css/filerxmp_admin.css')
 
+
+class ImageAdminMedia:
+    js = ['filerxmp/js/filerxmp_admin.js']
+    css = {'all': [
+        'filersets/css/filersets_admin.css',
+        '//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css'
+    ]}
+
 ImageAdmin.inlines = [XMPImageAdminInline] + ImageAdmin.inlines
+ImageAdmin.Media = ImageAdminMedia
 
 # ______________________________________________________________________________
 #                                                                   Registration
