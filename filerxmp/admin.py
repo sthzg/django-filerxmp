@@ -11,8 +11,10 @@ from django.contrib.admin.options import ModelAdmin, StackedInline
 # ______________________________________________________________________________
 #                                                                        Contrib
 from filer.admin import ImageAdmin
+from filer.models import Image
 # ______________________________________________________________________________
 #                                                                         Custom
+from filersets.models import Item
 from filerxmp.models import XMPImage, XMPBase
 from filersets.admin import ItemAdmin
 # ______________________________________________________________________________
@@ -82,8 +84,11 @@ class XMPImageAdminInline(StackedInline):
     extra = 0
     max_num = 0
 
+
 # ______________________________________________________________________________
-#                                                            Extension ItemAdmin
+#                                              Extension for Filersets ItemAdmin
+#                                                                _______________
+#                                                                Filter: Has XMP
 class HasXMPFilter(admin.SimpleListFilter):
     title = _('xmp')
     parameter_name = 'xmp'
@@ -102,23 +107,65 @@ class HasXMPFilter(admin.SimpleListFilter):
             return queryset.filter(filer_file__file_xmpbase__has_data=False)
 
 
-def xmp(self, obj):
-    """
-    Get an indicator whether the item carries XMP data.
-    """
-    # Note that normally defining the boolean attribute on the method would
-    # turn django to render the nice yesno images. But since we're extending
-    # the host class from here and python < 3 does not support assigning
-    # attributes to instancemethods, we're returning yes or no here.
-    return _('yes') if obj.filer_file.file_xmpbase.has_data else _('no')
-
-ItemAdmin.xmp = classmethod(xmp)
-ItemAdmin.list_display = ItemAdmin.list_display + ('xmp',)
-ItemAdmin.list_filter = ItemAdmin.list_filter + [HasXMPFilter]
 ItemAdmin.Media.js.append('filerxmp/js/filerxmp_admin.js')
 ItemAdmin.Media.css['all'].append('filerxmp/css/filerxmp_admin.css')
 
 
+#                                                                     __________
+#                                                                     ModelAdmin
+ItemAdmin = admin.site._registry[Item].__class__
+
+
+class ExtendedItemAdmin(ItemAdmin):
+    """
+    Extends the default filersets ItemAdmin to show a column that indicates
+    whether XMP data is available for a file.
+    """
+    def __init__(self, *args, **kwargs):
+        super(ItemAdmin, self).__init__(*args, **kwargs)
+
+    def get_list_display(self, request):
+        default_list_display = super(ItemAdmin, self).get_list_display(request)
+        return list(default_list_display) + [self.xmp]
+
+    def get_list_filter(self, request):
+        default_list_filter = super(ItemAdmin, self).get_list_filter(request)
+        return default_list_filter + [HasXMPFilter]
+
+    def xmp(self, obj):
+        """
+        Get an indicator whether the item carries XMP data.
+        """
+        return True if obj.filer_file.file_xmpbase.has_data else False
+
+    xmp.boolean = True
+    xmp.allow_tags = True
+
+ItemAdmin = ExtendedItemAdmin
+admin.site.unregister(Item)
+admin.site.register(Item, ItemAdmin)
+
+
+# ______________________________________________________________________________
+#                                                 Extension for Filer ImageAdmin
+ImageAdmin = admin.site._registry[Image].__class__
+
+
+#                                                                     __________
+#                                                                     ModelAdmin
+class ExtendedImageAdmin(ImageAdmin):
+    """
+    Extends the filer image change page with an inline for XMP data.
+    """
+    def __init__(self, *args, **kwargs):
+        super(ImageAdmin, self).__init__(*args, **kwargs)
+        self.inlines = self.inlines + [XMPImageAdminInline]
+
+ImageAdmin = ExtendedImageAdmin
+
+
+#                                                                          _____
+#                                                                          Media
 class ImageAdminMedia:
     js = ['filerxmp/js/filerxmp_admin.js']
     css = {'all': [
@@ -126,8 +173,11 @@ class ImageAdminMedia:
         '//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css'
     ]}
 
-ImageAdmin.inlines = [XMPImageAdminInline] + ImageAdmin.inlines
 ImageAdmin.Media = ImageAdminMedia
+
+admin.site.unregister(Image)
+admin.site.register(Image, ImageAdmin)
+
 
 # ______________________________________________________________________________
 #                                                                   Registration
