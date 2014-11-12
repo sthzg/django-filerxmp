@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-# ______________________________________________________________________________
-#                                                                         Future
 from __future__ import absolute_import
-# ______________________________________________________________________________
-#                                                                        Contrib
 from lxml import etree
 
 NS_DC = '{http://purl.org/dc/elements/1.1/}'
@@ -12,14 +8,14 @@ NS_AUX = '{http://ns.adobe.com/exif/1.0/aux/}'
 NS_XMP = '{http://ns.adobe.com/xap/1.0/}'
 
 def extract_xmp_for_image(xml_as_string):
-    """ Parse the XML string for relevant XMP meta data for an image
+    """ Parse the XML string for relevant XMP meta data for an image.
 
     :param xml_as_string: string containing valid <x:xmpmeta/>-XML
     :rtype: a dictionary with relevant meta data that was found in xml_as_string
     """
 
     #
-    # This is sparta. Namespace hell and ununique xml structures even with one
+    # This is sparta. Namespace hell and un-unique xml structures even with one
     # single vendor like Adobe. This is an approximation but needs thinking
     # to get a clean, dtd/schema-based solution.
     #
