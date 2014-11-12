@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
-# ______________________________________________________________________________
-#                                                                         Future
 from __future__ import absolute_import
-# ______________________________________________________________________________
-#                                                                         Django
 from django.forms import ModelForm
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.options import ModelAdmin, StackedInline
-# ______________________________________________________________________________
-#                                                                        Contrib
 from filer.admin import ImageAdmin
 from filer.models import Image
-# ______________________________________________________________________________
-#                                                                         Custom
 from filersets.models import Item
-from filerxmp.models import XMPImage, XMPBase
+from filerstream.hooks import admin_stream_hook
+from filerxmp.models import XMPImage
 from filersets.admin import ItemAdmin
-# ______________________________________________________________________________
-#                                                                    Django Suit
+
 try:
     from suit.widgets import LinkedSelect, AutosizedTextarea, \
         SuitSplitDateTimeWidget
@@ -26,8 +18,7 @@ try:
     has_suit = True
 except ImportError:
     has_suit = False
-# ______________________________________________________________________________
-#                                                                 Django Select2
+
 try:
     from django_select2 import AutoSelect2MultipleField, Select2MultipleWidget
     has_select2 = True
@@ -35,8 +26,6 @@ except ImportError:
     has_select2 = False
 
 
-# ______________________________________________________________________________
-#                                                           ModelForm: XMP Image
 class XMPImageForm(ModelForm):
     class Meta:
         model = XMPImage
@@ -51,8 +40,6 @@ class XMPImageForm(ModelForm):
         }
 
 
-# ______________________________________________________________________________
-#                                                          ModelAdmin: XMP Image
 class XMPImageAdmin(ModelAdmin):
     form = XMPImageForm
     readonly_fields = ('file', 'is_processed', 'has_data',)
@@ -60,8 +47,6 @@ class XMPImageAdmin(ModelAdmin):
                     'has_data', 'is_processed',)
 
 
-# ______________________________________________________________________________
-#                                                       StackedInline: XMP Image
 if has_suit:
     class XMPImageForm(ModelForm):
         class Meta:
@@ -85,10 +70,6 @@ class XMPImageAdminInline(StackedInline):
     max_num = 0
 
 
-# ______________________________________________________________________________
-#                                              Extension for Filersets ItemAdmin
-#                                                                _______________
-#                                                                Filter: Has XMP
 class HasXMPFilter(admin.SimpleListFilter):
     title = _('xmp')
     parameter_name = 'xmp'
@@ -110,9 +91,6 @@ class HasXMPFilter(admin.SimpleListFilter):
 ItemAdmin.Media.js.append('filerxmp/js/filerxmp_admin.js')
 ItemAdmin.Media.css['all'].append('filerxmp/css/filerxmp_admin.css')
 
-
-#                                                                     __________
-#                                                                     ModelAdmin
 ItemAdmin = admin.site._registry[Item].__class__
 
 
@@ -146,13 +124,10 @@ admin.site.unregister(Item)
 admin.site.register(Item, ItemAdmin)
 
 
-# ______________________________________________________________________________
-#                                                 Extension for Filer ImageAdmin
+# Extension for Filer ImageAdmin
 ImageAdmin = admin.site._registry[Image].__class__
 
 
-#                                                                     __________
-#                                                                     ModelAdmin
 class ExtendedImageAdmin(ImageAdmin):
     """
     Extends the filer image change page with an inline for XMP data.
@@ -164,8 +139,6 @@ class ExtendedImageAdmin(ImageAdmin):
 ImageAdmin = ExtendedImageAdmin
 
 
-#                                                                          _____
-#                                                                          Media
 class ImageAdminMedia:
     js = ['filerxmp/js/filerxmp_admin.js']
     css = {'all': [
@@ -178,7 +151,16 @@ ImageAdmin.Media = ImageAdminMedia
 admin.site.unregister(Image)
 admin.site.register(Image, ImageAdmin)
 
-
-# ______________________________________________________________________________
-#                                                                   Registration
 admin.site.register(XMPImage, XMPImageAdmin)
+
+
+def has_xmp_data_field(obj):
+    """Returns a flag whether the item carries XMP data."""
+    if hasattr(obj, 'file_xmpbase'):
+        yesno = 'yes' if obj.file_xmpbase.has_data else 'no'
+    else:
+        yesno = 'no'
+
+    return '<img src="/static/admin/img/icon-{}.gif">'.format(yesno)
+
+admin_stream_hook.register('has_xmp_data', _('XMP'), has_xmp_data_field)
