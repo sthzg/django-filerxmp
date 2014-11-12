@@ -100,7 +100,7 @@ class XMPBaseManager(models.Manager):
 
             # Second save
             # No exception so far -> add tags and set is_processed to True
-            if 'keys' in locals():
+            if len(locals()['keys']) > 0:
                 xmp_img.xmp_keywords.clear()
                 for key in reversed(keys):
                     key = key.replace('"', '').strip().lower()
