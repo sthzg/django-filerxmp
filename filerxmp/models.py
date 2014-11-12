@@ -8,6 +8,7 @@ from django.db.models.signals import post_save
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 from filer.models import File, Image
+from filerxmp.helpers import get_iptc_keywords
 from taggit_autosuggest_select2.managers import TaggableManager
 from .xmpextractor import extract_xmp_for_image, get_empty_default_dict_for_image
 from .helpers import get_xmp_string_from__file, get_datetime_or_none
@@ -63,13 +64,22 @@ class XMPBaseManager(models.Manager):
         # File carries XMP data
         results = extract_xmp_for_image(xmp_str)
 
+        # Additionally check for IPTC keywords and add a diff from XMP.
+        iptc_keywords = get_iptc_keywords(f.path)
+
+        keys = iptc_keywords
+
         # Taggit keywords need to be treated specially in three ways
-        # First existings tags need to be dumped
+        # First existing tags need to be dumped
         # Secondly they need to be inserted via add()
-        # Thrid they may only be inserted we have a PK
-        if 'keywords' in results \
-                and len(results['keywords']) > int(1):
-            keys = results['keywords'].split(',')
+        # Third they may only be inserted we have a PK
+        if 'keywords' in results and len(results['keywords']) > int(1):
+            xmp_keywords = results['keywords'].split(',')
+            # Make a diff between keys and iptc_keys and add unique tags.
+            lower_compare = [k.lower() for k in keys]
+            for key in xmp_keywords:
+                if key.lower() not in lower_compare:
+                    keys.append(key)
             del results['keywords']
 
         results['createdate'] = get_datetime_or_none(
