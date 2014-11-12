@@ -1,33 +1,19 @@
 # -*- coding: utf-8 -*-
-# ______________________________________________________________________________
-#                                                                         Future
 from __future__ import absolute_import
-# ______________________________________________________________________________
-#                                                                         Django
-from django.db import models
-from django.dispatch import receiver
-from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.utils.translation import ugettext_lazy as _
+from django.db import models
+from django.db.utils import IntegrityError
+from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-# ______________________________________________________________________________
-#                                                                        Contrib
 from filer.models import File, Image
 from taggit_autosuggest_select2.managers import TaggableManager
-# ______________________________________________________________________________
-#                                                                         Custom
-# ______________________________________________________________________________
-#                                                                        Package
-from filerxmp.xmpextractor import extract_xmp_for_image, \
-    get_empty_default_dict_for_image
-from filerxmp.helpers import get_xmp_string_from__file, get_datetime_or_none
+from .xmpextractor import extract_xmp_for_image, get_empty_default_dict_for_image
+from .helpers import get_xmp_string_from__file, get_datetime_or_none
 
 
-# ______________________________________________________________________________
-#                                                               Manager: XMPBase
 class XMPBaseManager(models.Manager):
-
     def create_or_update_xmp(self, fid=None):
         """
         This method is the entry point for XMP meta data creation for all
@@ -49,11 +35,9 @@ class XMPBaseManager(models.Manager):
                 self._create_or_update_image(f)
 
     def _create_or_update_image(self, f):
-        """
-        This private routine creates or updates meta data for a given
-        image file
+        """Creates or updates meta data for a given image file.
 
-        :param f: object of instan filer file
+        :param f: A filer file instance.
         """
         try:
             xmp_img = XMPImage.objects.get(file=f.pk)
@@ -120,10 +104,7 @@ class XMPBaseManager(models.Manager):
             return
 
 
-# ______________________________________________________________________________
-#                                                                 Model: XMPBase
 class XMPBase(TimeStampedModel):
-
     class Meta:
         verbose_name = _('XMP base')
         verbose_name_plural = _('XMP base')
@@ -228,10 +209,7 @@ class XMPBase(TimeStampedModel):
         return u'{}'.format(self.file.original_filename)
 
 
-# ______________________________________________________________________________
-#                                                                Model: XMPImage
 class XMPImage(XMPBase):
-
     class Meta:
         verbose_name = _('XMP image data')
         verbose_name_plural = _('XMP image data')
@@ -264,8 +242,6 @@ class XMPImage(XMPBase):
         return u'{}, type: Image'.format(self.file.original_filename)
 
 
-# ______________________________________________________________________________
-#                                                               Signal Listeners
 @receiver(post_save, sender=File)
 def extract_file_xmp(sender, **kwargs):
     pass
