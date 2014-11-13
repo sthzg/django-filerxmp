@@ -38,10 +38,17 @@ def get_iptc_keywords(path):
     if im.format == 'JPEG':
         iptc = iptcinfo.IPTCInfo(path)
         if len(iptc.keywords) > 0:
-            return iptc.keywords[0].split(',')
+            keys = []
+            for key in iptc.keywords[0].split(','):
+                key_uc = key.strip()
+                try:
+                    keys.append(u'{}'.format(key_uc))
+                except UnicodeDecodeError:
+                    keys.append(unicode(key_uc, 'unicode-escape'))
+
+            return keys
 
     return []
-
 
 
 def get_datetime_or_none(timestring):
