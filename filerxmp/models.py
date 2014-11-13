@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
-from django.db.utils import IntegrityError
+from django.db.utils import IntegrityError, DataError
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.utils.translation import ugettext_lazy as _
@@ -75,6 +75,8 @@ class XMPBaseManager(models.Manager):
         # Third they may only be inserted we have a PK
         if 'keywords' in results and len(results['keywords']) > int(1):
             xmp_keywords = results['keywords'].split(',')
+            xmp_keywords = [k.strip() for k in xmp_keywords]
+
             # Make a diff between keys and iptc_keys and add unique tags.
             lower_compare = [k.lower() for k in keys]
             for key in xmp_keywords:
@@ -105,6 +107,7 @@ class XMPBaseManager(models.Manager):
                 for key in reversed(keys):
                     key = key.replace('"', '').strip().lower()
                     xmp_img.xmp_keywords.add(key)
+
             xmp_img.is_processed = True
             xmp_img.save()
 
