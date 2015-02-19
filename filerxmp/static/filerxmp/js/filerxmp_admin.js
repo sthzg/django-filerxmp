@@ -36,6 +36,8 @@ var fxmpadmin = {
       var $el = $('<div></div>');
       $el.bind('xmpbase_data_ready', function(ev) {
         that.init_copy_from_xmp_keywords(that.data_store[0]);
+        that.init_copy_from_xmp_title(that.data_store[0]);
+        that.init_copy_from_xmp_description(that.data_store[0]);
       });
       this.get_xmpbase_by_filepk($('#id_filemodelext_file-0-filer_file').val(), $el);
     }
@@ -49,7 +51,7 @@ var fxmpadmin = {
    */
   get_xmpbase_by_filepk: function(pk_file, $fire_on) {
     $.ajax({
-      url: '/api/v1/fxmpbasebyfilepk/'+pk_file+'/',
+      url: '/api/v1/fxmpimage/'+pk_file+'/',
       context: this,
       success: function(data) {
         this.data_store.push({
@@ -70,8 +72,8 @@ var fxmpadmin = {
     //                                                                     _____
     //                                                                     Title
     if (data.data.xmp_title.length > 0) {
-      var $inp_title = $('input#id_title');
-      var $el = $('<span class="inline-link">[<a href="#">Copy from XMP</a>]</span>');
+      var $inp_title = $('input#id_name');
+      var $el = $('&nbsp;<span class="inline-link" style="margin-left: 10px;">[ <a href="#">Copy from XMP</a> ]</span>');
       $el.insertAfter($inp_title);
       $el.bind('click', function(ev) {
         $inp_title.val(data.data.xmp_title);
@@ -89,7 +91,7 @@ var fxmpadmin = {
     //                                                               Description
     if (data.data.xmp_description.length > 0 ) {
       var $txt_description = $('textarea#id_description');
-      var $el = $('<span class="inline-link">[<a href="#">Copy from XMP</a>]</span>');
+      var $el = $('&nbsp;<span class="inline-link" style="margin-left: 10px">[ <a href="#">Copy from XMP</a> ]</span>');
       $el.insertAfter($txt_description);
       $el.bind('click', function(ev) {
         $txt_description.val(data.data.xmp_description);
@@ -108,7 +110,7 @@ var fxmpadmin = {
     if (data.data.xmp_keywords.length > 0) {
       setTimeout(function() {
         var $inp_tags = $('#s2id_id_filemodelext_file-0-tags__tagautosuggest');
-        var $el = $('<span class="inline-link">[<a href="#">Copy from XMP</a>]</span>');
+        var $el = $('<span class="inline-link" style="margin-left: 10px;"> [ <a href="#">Copy from XMP</a> ]</span>');
         $el.insertAfter($inp_tags);
         $el.bind('click', function(ev) {
           var tags = data.data.xmp_keywords.join(', ');
