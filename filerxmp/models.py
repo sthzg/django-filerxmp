@@ -105,6 +105,7 @@ class XMPBaseManager(models.Manager):
 
                 for key in reversed(keys):
                     key = key.replace('"', '').strip().lower()
+                    if not key or key == '': continue
                     xmp_img.xmp_keywords.add(key)
 
             xmp_img.is_processed = True
