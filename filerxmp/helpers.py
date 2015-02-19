@@ -36,7 +36,11 @@ def get_iptc_keywords(path):
     im.verify()
 
     if im.format == 'JPEG':
-        iptc = iptcinfo.IPTCInfo(path)
+        try:
+            iptc = iptcinfo.IPTCInfo(path)
+        except Exception:
+            return []
+        
         if len(iptc.keywords) > 0:
             keys = []
             for key in iptc.keywords[0].split(','):
