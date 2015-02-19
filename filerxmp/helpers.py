@@ -40,7 +40,7 @@ def get_iptc_keywords(path):
             iptc = iptcinfo.IPTCInfo(path)
         except Exception:
             return []
-        
+
         if len(iptc.keywords) > 0:
             keys = []
             for key in iptc.keywords[0].split(','):
