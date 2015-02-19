@@ -42,7 +42,7 @@ class XMPBaseManager(models.Manager):
         """
         try:
             xmp_img = XMPImage.objects.get(file=f.pk)
-        except ObjectDoesNotExist:
+        except XMPImage.DoesNotExist:
             xmp_img = XMPImage()
 
         xmp_img.file = f
@@ -72,7 +72,7 @@ class XMPBaseManager(models.Manager):
         # Taggit keywords need to be treated specially in three ways
         # First existing tags need to be dumped
         # Secondly they need to be inserted via add()
-        # Third they may only be inserted we have a PK
+        # Third they may only be inserted if we have a PK
         if 'keywords' in results and len(results['keywords']) > int(1):
             xmp_keywords = results['keywords'].split(',')
             xmp_keywords = [k.strip() for k in xmp_keywords]
@@ -91,19 +91,18 @@ class XMPBaseManager(models.Manager):
             results['modifydate'])
 
         for k, v in results.items():
+            if k == 'keywords': continue
             xmp_img.__setattr__('xmp_{}'.format(k), v)
 
         try:
             # First save
-            # Yes it's a bit more costly but we assure proper saving before
-            # setting the is_processed flag to True on second save
             xmp_img.has_data = True
             xmp_img.save()
 
             # Second save
-            # No exception so far -> add tags and set is_processed to True
             if len(locals()['keys']) > 0:
                 xmp_img.xmp_keywords.clear()
+
                 for key in reversed(keys):
                     key = key.replace('"', '').strip().lower()
                     xmp_img.xmp_keywords.add(key)
@@ -214,8 +213,6 @@ class XMPBase(TimeStampedModel):
     )
 
     def get_tags_display(self):
-        # TODO This needs to currently be invoked by child instance or it
-        #      returns 0 keywords.
         return self.xmp_keywords.values_list('name', flat=True)
 
     def __unicode__(self):
