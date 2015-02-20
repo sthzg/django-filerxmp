@@ -164,7 +164,7 @@ var fxmpadmin = {
       }, 200);
     }
   }
-}
+};
 
 $(document).ready(function() {
   fxmpadmin.init();
